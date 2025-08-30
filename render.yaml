@@ -1,0 +1,20 @@
+# render.yaml for profilio-backend
+services:
+  - type: web
+    name: profilio-backend
+    env: java
+    plan: free
+    branch: main
+    region: oregon         # You can change to "oregon" or "oregon", etc.
+    buildCommand: ./mvnw clean package
+    startCommand: java -jar target/*.jar
+    autoDeploy: true       # Automatically redeploy on git push
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://db.bdcifdaqwlehlbjwezap.supabase.co:5432/postgres
+      - key: SPRING_DATASOURCE_USERNAME
+        value: postgres
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: Hiyanjong@332
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
