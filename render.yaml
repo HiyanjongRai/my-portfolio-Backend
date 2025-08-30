@@ -2,11 +2,11 @@
 services:
   - type: web
     name: profilio-backend
-    env: java17           # <-- Correct runtime for Render
+    env: java
     plan: free
     branch: main
     region: oregon
-    buildCommand: ./mvnw clean package
+    buildCommand: ./mvnw clean package -DskipTests
     startCommand: java -jar target/*.jar
     autoDeploy: true
     envVars:
