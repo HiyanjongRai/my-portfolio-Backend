@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Education Details CRUD</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9;">
+
+<h2 style="text-align:center; color:#333;">Education Details - CRUD Test</h2>
+
+<!-- Form -->
+<div style="background:#fff; padding:20px; border-radius:6px; max-width:600px; margin:0 auto; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+    <form id="eduForm">
+        <input type="hidden" id="id">
+
+        <label style="font-weight:bold;">Institution:</label>
+        <input type="text" id="institutionName" style="width:100%; padding:8px; margin:5px 0;" required>
+
+        <label style="font-weight:bold;">Degree:</label>
+        <input type="text" id="degree" style="width:100%; padding:8px; margin:5px 0;">
+
+        <label style="font-weight:bold;">Field of Study:</label>
+        <input type="text" id="fieldOfStudy" style="width:100%; padding:8px; margin:5px 0;">
+
+        <label style="font-weight:bold;">Level:</label>
+        <select id="level" style="width:100%; padding:8px; margin:5px 0;">
+            <option value="SCHOOL">SCHOOL</option>
+            <option value="COLLEGE">COLLEGE</option>
+            <option value="UNIVERSITY">UNIVERSITY</option>
+        </select>
+
+        <label style="font-weight:bold;">Location:</label>
+        <input type="text" id="location" style="width:100%; padding:8px; margin:5px 0;">
+
+        <label style="font-weight:bold;">Start Year:</label>
+        <input type="number" id="startedYear" style="width:100%; padding:8px; margin:5px 0;">
+
+        <label style="font-weight:bold;">Completed Year:</label>
+        <input type="number" id="completedYear" style="width:100%; padding:8px; margin:5px 0;">
+
+        <label style="font-weight:bold;">Grade:</label>
+        <input type="text" id="grade" style="width:100%; padding:8px; margin:5px 0;">
+
+        <label style="font-weight:bold;">Description:</label>
+        <textarea id="description" style="width:100%; padding:8px; margin:5px 0;"></textarea>
+
+        <button type="submit" style="background:#28a745; color:white; padding:10px; border:none; border-radius:4px; width:100%; margin-top:10px; cursor:pointer;">
+            Save
+        </button>
+    </form>
+</div>
+
+<h3 style="text-align:center; margin-top:30px;">Education Records</h3>
+
+<table id="eduTable" style="width:90%; margin:auto; border-collapse:collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+    <thead style="background:#007bff; color:white;">
+    <tr>
+        <th style="padding:10px; border:1px solid #ddd;">ID</th>
+        <th style="padding:10px; border:1px solid #ddd;">Institution</th>
+        <th style="padding:10px; border:1px solid #ddd;">Degree</th>
+        <th style="padding:10px; border:1px solid #ddd;">Level</th>
+        <th style="padding:10px; border:1px solid #ddd;">Year</th>
+        <th style="padding:10px; border:1px solid #ddd;">Actions</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    const API_URL = "http://localhost:8080/api/education"; // adjust if needed
+
+    // Fetch all records
+    async function fetchEducation() {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        const tbody = document.querySelector("#eduTable tbody");
+        tbody.innerHTML = "";
+        data.forEach(e => {
+            tbody.innerHTML += `
+          <tr>
+            <td style="padding:8px; border:1px solid #ddd;">${e.id}</td>
+            <td style="padding:8px; border:1px solid #ddd;">${e.institutionName}</td>
+            <td style="padding:8px; border:1px solid #ddd;">${e.degree || ''}</td>
+            <td style="padding:8px; border:1px solid #ddd;">${e.level}</td>
+            <td style="padding:8px; border:1px solid #ddd;">${e.startedYear || ''} - ${e.completedYear || ''}</td>
+            <td style="padding:8px; border:1px solid #ddd;">
+              <button onclick="editEducation(${e.id})" style="background:#007bff; color:white; padding:5px 8px; border:none; border-radius:3px; cursor:pointer;">Edit</button>
+              <button onclick="deleteEducation(${e.id})" style="background:#dc3545; color:white; padding:5px 8px; border:none; border-radius:3px; cursor:pointer;">Delete</button>
+            </td>
+          </tr>`;
+        });
+    }
+
+    // Add or Update
+    document.getElementById("eduForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const id = document.getElementById("id").value;
+        const edu = {
+            institutionName: document.getElementById("institutionName").value,
+            degree: document.getElementById("degree").value,
+            fieldOfStudy: document.getElementById("fieldOfStudy").value,
+            level: document.getElementById("level").value,
+            location: document.getElementById("location").value,
+            startedYear: document.getElementById("startedYear").value,
+            completedYear: document.getElementById("completedYear").value,
+            grade: document.getElementById("grade").value,
+            description: document.getElementById("description").value
+        };
+
+        if (id) {
+            await fetch(`${API_URL}/${id}`, {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(edu)
+            });
+        } else {
+            await fetch(API_URL, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(edu)
+            });
+        }
+        e.target.reset();
+        document.getElementById("id").value = "";
+        fetchEducation();
+    });
+
+    // Edit
+    async function editEducation(id) {
+        const res = await fetch(`${API_URL}/${id}`);
+        const edu = await res.json();
+        document.getElementById("id").value = edu.id;
+        document.getElementById("institutionName").value = edu.institutionName;
+        document.getElementById("degree").value = edu.degree;
+        document.getElementById("fieldOfStudy").value = edu.fieldOfStudy;
+        document.getElementById("level").value = edu.level;
+        document.getElementById("location").value = edu.location;
+        document.getElementById("startedYear").value = edu.startedYear;
+        document.getElementById("completedYear").value = edu.completedYear;
+        document.getElementById("grade").value = edu.grade;
+        document.getElementById("description").value = edu.description;
+    }
+
+    // Delete
+    async function deleteEducation(id) {
+        await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+        fetchEducation();
+    }
+
+    fetchEducation();
+</script>
+</body>
+</html>
