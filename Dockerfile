@@ -10,7 +10,14 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Render requires binding to PORT (default=10000)
+# Render uses PORT=10000 for web services
 ENV PORT=10000
 EXPOSE 10000
-ENTRYPOINT ["java","-XX:MaxRAMPercentage=75.0","-Dserver.port=${PORT}","-jar","/app/app.jar"]
+
+# Memory-friendly flags for free tier
+ENTRYPOINT ["java",
+  "-XX:MaxRAMPercentage=70.0",
+  "-XX:+UseSerialGC",
+  "-Dserver.port=${PORT}",
+  "-jar","/app/app.jar"
+]

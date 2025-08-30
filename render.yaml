@@ -1,3 +1,4 @@
+# render.yaml for profilio-backend
 services:
   - type: web
     name: profilio-backend
@@ -6,12 +7,36 @@ services:
     region: oregon
     dockerfilePath: ./Dockerfile
     autoDeploy: true
+    healthCheckPath: /actuator/health   # optional if you have actuator
     envVars:
+      # Database configuration
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://db.bdcifdaqwlehlbjwezap.supabase.co:5432/postgres
+        value: jdbc:postgresql://db.bdcifdaqwlehlbjwezap.supabase.co:5432/postgres?sslmode=require
       - key: SPRING_DATASOURCE_USERNAME
         value: postgres
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false   # don’t hardcode secrets, set them in Render dashboard
+        sync: false   # enter it manually in Render UI
+
+      # JPA / Hibernate
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: update
+      - key: SPRING_JPA_SHOW_SQL
+        value: true
+      - key: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
+        value: org.hibernate.dialect.PostgreSQLDialect
+
+      # JWT Configuration
+      - key: JWT_SECRET
+        sync: false   # enter it manually in Render UI
+      - key: JWT_EXPIRATION
+        value: "3600000"
+
+      # Server port
+      - key: SERVER_PORT
+        value: "8080"
+
+      # File upload limits
+      - key: SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE
+        value: 10MB
+      - key: SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE
+        value: 10MB
