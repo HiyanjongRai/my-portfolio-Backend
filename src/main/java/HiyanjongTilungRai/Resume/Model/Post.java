@@ -23,5 +23,6 @@ public class Post {
     @Column(name = "data", nullable = false)
     private byte[] data;
 
-    private String description; // <-- NEW field
+    @Column(length = 1000)
+    private String description;
 }

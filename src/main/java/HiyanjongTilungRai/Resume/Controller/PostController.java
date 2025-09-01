@@ -24,7 +24,6 @@ public class PostController {
 
     // Upload image with description
     @PostMapping("/upload")
-    @PreAuthorize("hasRole('Admin')")
     public Post uploadPost(@RequestParam("name") String name,
                            @RequestParam("description") String description,
                            @RequestParam("file") MultipartFile file) throws IOException {
