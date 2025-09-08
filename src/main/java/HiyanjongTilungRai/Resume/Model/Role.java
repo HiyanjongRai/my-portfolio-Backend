@@ -1,6 +1,5 @@
 package HiyanjongTilungRai.Resume.Model;
 
-public  enum Role {
-    Admin,
-    User
+public enum Role {
+    ADMIN, USER
 }

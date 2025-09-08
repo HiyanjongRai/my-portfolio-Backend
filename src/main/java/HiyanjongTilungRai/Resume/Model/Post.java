@@ -1,28 +1,31 @@
+// src/main/java/HiyanjongTilungRai/Resume/Model/Post.java
 package HiyanjongTilungRai.Resume.Model;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "images")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "posts")
 public class Post {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
-    @JdbcTypeCode(SqlTypes.BINARY)
-    @Column(name = "data", nullable = false)
+    @Column(length = 2000)
+    private String description;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
     private byte[] data;
 
-    @Column(length = 1000)
-    private String description;
+    // getters/setters
+    public Long getId() { return id; }
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+    public byte[] getData() { return data; }
+    public void setId(Long id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setDescription(String description) { this.description = description; }
+    public void setData(byte[] data) { this.data = data; }
 }
