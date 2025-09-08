@@ -102,11 +102,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var cfg = new CorsConfiguration();
+
+        // Allow your frontend(s)
         cfg.setAllowedOriginPatterns(List.of(
-                "http://127.0.0.1:*",
-                "http://localhost:*",
-                "null"
+                "https://YOUR-VERCEL-PROJECT.vercel.app", // exact Vercel deployment
+                "https://hiyanjong.vercel.app",                   // any preview on Vercel (optional)
+                "http://localhost:*",                     // local dev (any port)
+                "http://127.0.0.1:*",                     // local dev (any port)
+                "null"                                    // file:// usage (optional; remove if not needed)
         ));
+
         cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization","Content-Type","Accept","X-CSRF-TOKEN"));
         cfg.setExposedHeaders(List.of("Content-Disposition","Location","X-Description"));
@@ -117,6 +122,7 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", cfg);
         return source;
     }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
