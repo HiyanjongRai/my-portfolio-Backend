@@ -63,8 +63,6 @@ public class AboutMe {
             this.lastName = lastName;
         }
 
-
-
         // Email
         @Column(nullable = false)
         private String email;
