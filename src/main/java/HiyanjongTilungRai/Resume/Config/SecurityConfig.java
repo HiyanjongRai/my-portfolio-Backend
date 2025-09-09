@@ -37,54 +37,54 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // stateless API with JWT
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
 
                 .authorizeHttpRequests(auth -> auth
-                        // always allow preflight
+                        // preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // *** PROTECT ADMIN HTML FIRST (before static resources) ***
+                        // PUBLIC HEALTH
+                        .requestMatchers(HttpMethod.GET, "/health", "/api/health").permitAll()
+
+                        // admin HTML (guard BEFORE static)
                         .requestMatchers(HttpMethod.GET, "/admin", "/admin.html", "/admin/**").hasRole("ADMIN")
 
-                        // public root pages
+                        // public root
                         .requestMatchers(HttpMethod.GET, "/", "/index.html", "/favicon.ico", "/error").permitAll()
 
-                        // auth endpoints
+                        // auth endpoints public
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // projects: public read, admin writes
-                        .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/projects/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/projects/**").hasRole("ADMIN")
+                        // projects: public read, admin write
+                        .requestMatchers(HttpMethod.GET,    "/api/projects/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,   "/api/projects/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/projects/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasRole("ADMIN")
 
-                        // images: public read, admin writes
-                        .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/images/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/images/**").hasRole("ADMIN")
+                        // images: public read, admin write
+                        .requestMatchers(HttpMethod.GET,    "/api/images/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,   "/api/images/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT,    "/api/images/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/images/**").hasRole("ADMIN")
 
-                        // *** static resources (placed AFTER admin rule) ***
+                        // static resources
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
-                        // anything else requires auth
+                        // the rest requires auth
                         .anyRequest().authenticated()
                 )
 
-                // Attach JWT filter
+                // JWT filter first
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
-                // Different entry points for APIs vs admin HTML
+                // Different entry points (API -> 401 JSON, Admin -> redirect)
                 .exceptionHandling(ex -> ex
-                        // APIs -> 401 JSON
                         .defaultAuthenticationEntryPointFor(
                                 (req, res, e) -> res.sendError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized"),
                                 new AntPathRequestMatcher("/api/**")
                         )
-                        // Admin HTML -> redirect and ensure no caching
                         .defaultAuthenticationEntryPointFor(
                                 (req, res, e) -> {
                                     res.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0");
@@ -92,7 +92,16 @@ public class SecurityConfig {
                                     res.setDateHeader("Expires", 0);
                                     res.sendRedirect("/index.html");
                                 },
-                                new AntPathRequestMatcher("/admin**")
+                                new AntPathRequestMatcher("/admin")
+                        )
+                        .defaultAuthenticationEntryPointFor(
+                                (req, res, e) -> {
+                                    res.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0");
+                                    res.setHeader("Pragma", "no-cache");
+                                    res.setDateHeader("Expires", 0);
+                                    res.sendRedirect("/index.html");
+                                },
+                                new AntPathRequestMatcher("/admin/**")
                         )
                 );
 
@@ -103,15 +112,13 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         var cfg = new CorsConfiguration();
 
-        // Allow your frontend(s)
+        // TODO: replace with your actual frontend(s)
         cfg.setAllowedOriginPatterns(List.of(
-                "https://YOUR-VERCEL-PROJECT.vercel.app", // exact Vercel deployment
-                "https://hiyanjong.vercel.app",                   // any preview on Vercel (optional)
-                "http://localhost:*",                     // local dev (any port)
-                "http://127.0.0.1:*",                     // local dev (any port)
-                "null"                                    // file:// usage (optional; remove if not needed)
+                "https://hiyanjong.vercel.app",
+                "https://*.vercel.app",  // previews (optional)
+                "http://localhost:*",
+                "http://127.0.0.1:*"
         ));
-
         cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
         cfg.setAllowedHeaders(List.of("Authorization","Content-Type","Accept","X-CSRF-TOKEN"));
         cfg.setExposedHeaders(List.of("Content-Disposition","Location","X-Description"));
@@ -122,7 +129,6 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", cfg);
         return source;
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }

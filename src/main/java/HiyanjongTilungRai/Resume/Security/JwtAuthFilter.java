@@ -1,3 +1,4 @@
+// src/main/java/HiyanjongTilungRai/Resume/Security/JwtAuthFilter.java
 package HiyanjongTilungRai.Resume.Security;
 
 import HiyanjongTilungRai.Resume.Services.AppUserDetailsService;
@@ -29,11 +30,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain chain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain)
+            throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())
+                || "/health".equals(uri)
+                || "/api/health".equals(uri)) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
 
