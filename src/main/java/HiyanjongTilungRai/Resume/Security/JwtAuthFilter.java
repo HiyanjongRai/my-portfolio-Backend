@@ -35,14 +35,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
-        // Use servletPath to ignore any context-path prefixes automatically
-        String path = request.getServletPath();
-
-        // ✅ Public/ignored paths: CORS preflight + health probes
+        String uri = request.getRequestURI();
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())
-                || path.equals("/health")
-                || path.equals("/api/health")
-                || path.startsWith("/actuator/health")) {
+                || "/health".equals(uri)
+                || "/api/health".equals(uri)) {
             chain.doFilter(request, response);
             return;
         }
@@ -61,12 +57,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     }
                 }
-            } catch (Exception ignored) {
-                // Optional: log at DEBUG to help diagnose bad tokens without breaking public endpoints
-            }
+            } catch (Exception ignored) {}
         }
 
         chain.doFilter(request, response);
     }
-
 }
