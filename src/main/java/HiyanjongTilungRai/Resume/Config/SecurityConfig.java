@@ -45,7 +45,10 @@ public class SecurityConfig {
                         // preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // PUBLIC HEALTH
+                        // ✅ PUBLIC ACTUATOR HEALTH (root + subpaths)
+                        .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
+
+                        // your custom health endpoints (if you still use them)
                         .requestMatchers(HttpMethod.GET, "/health", "/api/health").permitAll()
 
                         // admin HTML (guard BEFORE static)
@@ -75,6 +78,7 @@ public class SecurityConfig {
                         // the rest requires auth
                         .anyRequest().authenticated()
                 )
+
 
                 // JWT filter first
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
