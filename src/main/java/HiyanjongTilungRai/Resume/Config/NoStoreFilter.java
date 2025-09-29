@@ -17,7 +17,7 @@ public class NoStoreFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
 
-        // only for protected areas (admin + api)
+
         String uri = req.getRequestURI();
         if (uri.startsWith("/admin") || uri.startsWith("/api/")) {
             res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");

@@ -23,7 +23,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/auth")
 @Validated
-@CrossOrigin(origins = "*") // helpful for local HTML files; tighten in prod
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthenticationManager authManager;
@@ -61,27 +61,29 @@ public class AuthController {
                 .body(Map.of("message", "registered"));
     }
 
-    /** -------- Sign in (matches main.js) -------- */
+
     @PostMapping("/signin")
-    public ResponseEntity<AuthResponse> signin(@RequestBody SignInRequest req) {
-        // Accept username or email in the "username" field
+    public ResponseEntity<?> signin(@RequestBody SignInRequest req) {
         String principal = req.username();
         Optional<User> uOpt = users.findByUserNameIgnoreCaseOrEmailIgnoreCase(principal, principal);
 
-        // Authenticate via Spring Security
-        Authentication auth = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(principal, req.password())
-        );
+        try {
+            Authentication auth = authManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(principal, req.password())
+            );
 
-        // Build token for the canonical username
-        String usernameForToken = uOpt.map(User::getUserName).orElse(auth.getName());
-        String token = jwt.generate(usernameForToken, Map.of("scope", "api"));
+            String usernameForToken = uOpt.map(User::getUserName).orElse(auth.getName());
+            String token = jwt.generate(usernameForToken, Map.of("scope", "api"));
 
-        Role role = uOpt.map(User::getRole).orElse(Role.USER);
-        return ResponseEntity.ok(new AuthResponse(token, usernameForToken, role.name()));
+            Role role = uOpt.map(User::getRole).orElse(Role.USER);
+            return ResponseEntity.ok(new AuthResponse(token, usernameForToken, role.name()));
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            // Return a clear message without revealing which field was wrong
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Incorrect email or password"));
+        }
     }
 
-    /** -------- Optional: whoami for quick checks -------- */
     @GetMapping("/me")
     public ResponseEntity<?> me(@AuthenticationPrincipal UserDetails user) {
         if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -92,7 +94,6 @@ public class AuthController {
         ));
     }
 
-    /** -------- DTOs -------- */
     public record RegisterRequest(
             @NotBlank String fullName,
             @NotBlank String userName,
@@ -101,7 +102,6 @@ public class AuthController {
             Role role
     ) {}
 
-    // matches frontend body: { "username": "...", "password": "..." }
     public record SignInRequest(@NotBlank String username, @NotBlank String password) {}
 
     public record AuthResponse(String token, String username, String role) {}
@@ -112,7 +112,6 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        // Find the matching user from DB so you can get fullName too
         Optional<User> uOpt = users.findByUserNameIgnoreCaseOrEmailIgnoreCase(user.getUsername(), user.getUsername());
 
         return ResponseEntity.ok(Map.of(

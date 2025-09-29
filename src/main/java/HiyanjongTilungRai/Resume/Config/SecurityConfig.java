@@ -52,7 +52,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/admin", "/admin.html", "/admin/**").hasRole("ADMIN")
 
                         // public root
-                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "/favicon.ico", "/error").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "gallery.html" ,"/favicon.ico", "/error").permitAll()
 
                         // auth endpoints public
                         .requestMatchers("/api/auth/**").permitAll()
@@ -115,7 +115,7 @@ public class SecurityConfig {
         // TODO: replace with your actual frontend(s)
         cfg.setAllowedOriginPatterns(List.of(
                 "https://hiyanjong.vercel.app",
-                "https://*.vercel.app",  // previews (optional)
+                "https://*.vercel.app",
                 "http://localhost:*",
                 "http://127.0.0.1:*"
         ));

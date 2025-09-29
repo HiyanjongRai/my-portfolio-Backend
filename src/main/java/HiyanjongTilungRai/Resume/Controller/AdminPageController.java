@@ -23,6 +23,6 @@ public class AdminPageController {
             return "redirect:/login";
         }
 
-        return "admin"; // admin.html will be served
+        return "admin";
     }
 }
