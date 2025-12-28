@@ -48,33 +48,37 @@ public class SecurityConfig {
                         // PUBLIC HEALTH
                         .requestMatchers(HttpMethod.GET, "/health", "/api/health").permitAll()
 
+                        // PUBLIC VISITOR TRACKING (anonymous tracking)
+                        .requestMatchers(HttpMethod.POST, "/api/visitors/track").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/visitors/count").permitAll()
+
                         // admin HTML (guard BEFORE static)
                         .requestMatchers(HttpMethod.GET, "/admin", "/admin.html", "/admin/**").hasRole("ADMIN")
 
                         // public root
-                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "gallery.html" ,"/favicon.ico", "/error").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "gallery.html", "/favicon.ico", "/error")
+                        .permitAll()
 
                         // auth endpoints public
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // projects: public read, admin write
-                        .requestMatchers(HttpMethod.GET,    "/api/projects/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,   "/api/projects/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,    "/api/projects/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/projects/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/projects/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/projects/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/projects/**").hasRole("ADMIN")
 
                         // images: public read, admin write
-                        .requestMatchers(HttpMethod.GET,    "/api/images/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,   "/api/images/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT,    "/api/images/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/images/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/images/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/images/**").hasRole("ADMIN")
 
                         // static resources
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
                         // the rest requires auth
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
 
                 // JWT filter first
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -83,27 +87,25 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .defaultAuthenticationEntryPointFor(
                                 (req, res, e) -> res.sendError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized"),
-                                new AntPathRequestMatcher("/api/**")
-                        )
+                                new AntPathRequestMatcher("/api/**"))
                         .defaultAuthenticationEntryPointFor(
                                 (req, res, e) -> {
-                                    res.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0");
+                                    res.setHeader(HttpHeaders.CACHE_CONTROL,
+                                            "no-store, no-cache, must-revalidate, max-age=0");
                                     res.setHeader("Pragma", "no-cache");
                                     res.setDateHeader("Expires", 0);
                                     res.sendRedirect("/index.html");
                                 },
-                                new AntPathRequestMatcher("/admin")
-                        )
+                                new AntPathRequestMatcher("/admin"))
                         .defaultAuthenticationEntryPointFor(
                                 (req, res, e) -> {
-                                    res.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0");
+                                    res.setHeader(HttpHeaders.CACHE_CONTROL,
+                                            "no-store, no-cache, must-revalidate, max-age=0");
                                     res.setHeader("Pragma", "no-cache");
                                     res.setDateHeader("Expires", 0);
                                     res.sendRedirect("/index.html");
                                 },
-                                new AntPathRequestMatcher("/admin/**")
-                        )
-                );
+                                new AntPathRequestMatcher("/admin/**")));
 
         return http.build();
     }
@@ -117,11 +119,10 @@ public class SecurityConfig {
                 "https://hiyanjong.vercel.app",
                 "https://*.vercel.app",
                 "http://localhost:*",
-                "http://127.0.0.1:*"
-        ));
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization","Content-Type","Accept","X-CSRF-TOKEN"));
-        cfg.setExposedHeaders(List.of("Content-Disposition","Location","X-Description"));
+                "http://127.0.0.1:*"));
+        cfg.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        cfg.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-CSRF-TOKEN"));
+        cfg.setExposedHeaders(List.of("Content-Disposition", "Location", "X-Description"));
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(3600L);
 
@@ -131,7 +132,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
