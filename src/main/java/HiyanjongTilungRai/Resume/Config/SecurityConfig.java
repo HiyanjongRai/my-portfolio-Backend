@@ -51,12 +51,14 @@ public class SecurityConfig {
                         // PUBLIC VISITOR TRACKING (anonymous tracking)
                         .requestMatchers(HttpMethod.POST, "/api/visitors/track").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/visitors/count").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/visitors/test").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/visitors/stats").hasRole("ADMIN")
 
                         // admin HTML (guard BEFORE static)
                         .requestMatchers(HttpMethod.GET, "/admin", "/admin.html", "/admin/**").hasRole("ADMIN")
 
                         // public root
-                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "gallery.html", "/favicon.ico", "/error")
+                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "/gallery.html", "/favicon.ico", "/error")
                         .permitAll()
 
                         // auth endpoints public

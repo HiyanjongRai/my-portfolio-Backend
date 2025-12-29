@@ -17,7 +17,7 @@ public class AdminPageController {
 
         boolean isAdmin = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(role -> role.equals("ROLE_Admin"));
+                .anyMatch(role -> role.equals("ROLE_ADMIN"));
 
         if (!isAdmin) {
             return "redirect:/login";

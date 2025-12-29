@@ -23,15 +23,12 @@ public class VisitorController {
 
     /**
      * Record a new visitor (public endpoint)
-     * Called when a user visits the site
      */
     @PostMapping("/track")
     public ResponseEntity<?> trackVisit(@RequestBody VisitorDto dto, HttpServletRequest request) {
         try {
-            // Get IP address (handle proxy/forwarding)
             String ipAddress = getClientIpAddress(request);
             String userAgent = request.getHeader("User-Agent");
-
             Visitor visitor = visitorService.recordVisit(dto, ipAddress, userAgent);
 
             return ResponseEntity.ok(Map.of(
@@ -55,6 +52,14 @@ public class VisitorController {
     }
 
     /**
+     * Test endpoint (public) to verify controller availability
+     */
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+        return ResponseEntity.ok(Map.of("message", "Visitor controller is active"));
+    }
+
+    /**
      * Get comprehensive visitor statistics (admin only)
      */
     @GetMapping("/stats")
@@ -64,34 +69,20 @@ public class VisitorController {
         return ResponseEntity.ok(stats);
     }
 
-    /**
-     * Helper to get client IP address, handling proxies
-     */
     private String getClientIpAddress(HttpServletRequest request) {
         String[] headers = {
-                "X-Forwarded-For",
-                "X-Real-IP",
-                "Proxy-Client-IP",
-                "WL-Proxy-Client-IP",
-                "HTTP_X_FORWARDED_FOR",
-                "HTTP_X_FORWARDED",
-                "HTTP_X_CLUSTER_CLIENT_IP",
-                "HTTP_CLIENT_IP",
-                "HTTP_FORWARDED_FOR",
-                "HTTP_FORWARDED"
+                "X-Forwarded-For", "X-Real-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP",
+                "HTTP_X_FORWARDED_FOR", "HTTP_X_FORWARDED", "HTTP_X_CLUSTER_CLIENT_IP",
+                "HTTP_CLIENT_IP", "HTTP_FORWARDED_FOR", "HTTP_FORWARDED"
         };
-
         for (String header : headers) {
             String ip = request.getHeader(header);
             if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-                // If multiple IPs (from proxy chain), get the first one
-                if (ip.contains(",")) {
+                if (ip.contains(","))
                     ip = ip.split(",")[0].trim();
-                }
                 return ip;
             }
         }
-
         return request.getRemoteAddr();
     }
 }
